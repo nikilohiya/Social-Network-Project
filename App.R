@@ -57,6 +57,10 @@ ui <- fluidPage(
           verbatimTextOutput("bstat_log"),
           h3("Basic Discrete Return Statistical Results"),
           verbatimTextOutput("bstat"),
+          br(),
+          br(),
+          br(),
+          br(),
           h6("References"),
           p("The application has solely been created for academic purposes only.")
         ),
@@ -73,11 +77,32 @@ ui <- fluidPage(
           verbatimTextOutput("cor"),
           h2("The Network of stocks"),
           plotOutput("sna"),
+          h3("How to Evaluate this Graph???"),
+          h5("This graph is based on the Legend that is provided with this. The color coding of the graph explains the kind of relationship is present in the stock securities (See the Legend Table). The thickness of the edges are defined on the bases of the correlation of the securities also this is further divided into tranches i.e. the high thickness with green indicates that is more close to the 40% but less than 40 %."),
+          h5("The color RED indicates that the stocks have a negative correlations"),
+          h5("Here the Stock Numbers represent the order in which they are indicated in the Correlation Table"),
+          br(),
+          br(),
+          h3("Degree Centrality"),
+          verbatimTextOutput("deg"),
+          h3("Betweenness"),
+          verbatimTextOutput("bet"),
+          h3("Closeness"),
+          verbatimTextOutput("cl"),
+          h3("Graph with no negative correlations!"),
+          plotOutput("sna_op"),
+          h3("NOTE:"),
+          h5("These details are obtained by using the constraint that Negetive values of the edges are not allowed, which is not the case of above graph. This has been done for the sake of calculations of Degree Centrality and Betweeness which do not allow negative values."),
+          br(),
+          br(),
+          br(),
+          br(),
+          br(),
+          br(),
+          br(),
+          br(),
           
-          # verbatimTextOutput("deg"),
-          # verbatimTextOutput("bet"),
-          # verbatimTextOutput("cl"),
-          # #            plotOutput("plot4"),
+          #            plotOutput("plot4"),
           h6("References"),
           p("The application has solely been created for academic purposes only.")
         )
@@ -191,7 +216,7 @@ server <- function(input, output) ({
     V(graph)$label<- seq(1:n())#V(graph)$name
     V(graph)$name <- colnames(df())
     graph$layout <- layout.fruchterman.reingold
-    factor<-as.factor(cut(E(graph)$weight*10,c(-10,0,4,7,10)))
+    factor<-as.factor(cut(E(graph)$weight*10,c(-10,-7,-4,0,4,7,10)))
     plotit <- function(input,output){plot(decompose.graph(graph)[[which.max(sapply(decompose.graph(graph), vcount))]], edge.width =as.numeric(factor)*1.5,frame=T)
     legend("bottomleft", title="Colors", cex=0.75, pch=16, col=c("yellow", "blue","green", "red"),
     legend=c(">70%", "40-70%","0-40%","0-(100)%"), ncol=2)}
@@ -208,6 +233,7 @@ server <- function(input, output) ({
     E(graph)[ weight>=0.4 & weight<0.7 ]$color <-"blue" 
     E(graph)[ weight>=0 &weight<0.4 ]$color <- "green" 
     E(graph) [weight<0 ]$color <- "red"
+    graph = delete.edges(graph, E(graph)[ weight < 0.00001])
     # E(graph)[ weight<0.55  ]$color <- "yellow"
     V(graph)$label<- seq(1:n())#V(graph)$name
     V(graph)$name <- colnames(df())
@@ -238,6 +264,7 @@ server <- function(input, output) ({
   output$deg <- renderPrint(degree(net_det()))
   output$bet <- renderPrint(betweenness(net_det(), normalized = TRUE))
   output$cl <- renderPrint(closeness(net_det()))
+  output$sna_op <- renderPlot(plot(net_det()))
 })
 
 # Run the application 
