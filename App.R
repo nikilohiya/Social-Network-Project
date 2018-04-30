@@ -30,7 +30,7 @@ ui <- fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      textInput("symbol","Enter the stock symbol",value = toupper("CL MSFT")),
+      textInput("symbol","Enter the stock symbol",value = toupper("CL MSFT DDD MMM WBAI WUBA")),
       dateInput("startDate","Enter the starting Date",value = "2016-01-01",format = "yyyy-mm-dd"),
       dateInput("lastDate","Enter the Ending Date",value = "2018-01-01",format = "yyyy-mm-dd"),
       # checkboxInput("Arima","ARIMA Analysis",value = FALSE),
@@ -59,7 +59,7 @@ ui <- fluidPage(
           verbatimTextOutput("bstat"),
           h6("References"),
           p("The application has solely been created for academic purposes only.")
-          ),
+        ),
         tabPanel(
           "Portfolio Analytics",
           h2("Value at Risk"),
@@ -69,7 +69,15 @@ ui <- fluidPage(
           h4("Optimised weights for the given stocks in percenatges are"),
           verbatimTextOutput("wt"),
           verbatimTextOutput("tab"),
-          #            plotOutput("plot4"),
+          h2("Correlations in the Stocks (Matrix)"),         
+          verbatimTextOutput("cor"),
+          h2("The Network of stocks"),
+          plotOutput("sna"),
+          
+          # verbatimTextOutput("deg"),
+          # verbatimTextOutput("bet"),
+          # verbatimTextOutput("cl"),
+          # #            plotOutput("plot4"),
           h6("References"),
           p("The application has solely been created for academic purposes only.")
         )
@@ -80,8 +88,8 @@ ui <- fluidPage(
     )
   ),
   hr(),
-  print("~~~Created By: Nikhil Lohiya~~~~"),
-  print("~~~Portfolio Analytics Created By: Taranpreet Singh~~~~")
+  print("~~~Created By: Nikhil Lohiya & Sarita Shinde~~~~"),
+  print("~~~Special Thanks to: Taranpreet Singh~~~~")
 )
 
 
@@ -116,81 +124,11 @@ server <- function(input, output) ({
     return(Return.calculate(df(),method = c("discrete"))[-1])
   })
   
-  # 
-  # bstats <- function(input, output)({
-  #   return(basicStats(input))
-  # })
-  # 
-  # alpha <- function(input, out)({
-  #   x = vector("list", n())
-  #   for (i in 1:n())({
-  #     if (input == "boxtest")
-  #     {
-  #       ac <- Box.test(returns_log()[,i], lag = 10, type = "Ljung")
-  #       x[[i]] <- ac
-  #     }
-  #     if (input == "annualseasonal")
-  #     {
-  #       a <- ts(returns_log()[,i], frequency=365/365)
-  #       fit <- tbats(a)
-  #       x[[i]] <- !is.null(fit$seasonal)
-  #     }
-  #     if (input == "adftest")
-  #     {
-  #       adf <- adf.test(returns_log()[,i])
-  #       x[[i]] <- adf
-  #     }
-  #   })
-  #   setNames(x, paste0(colnames(df)[,1:n()] , 1:n()))
-  #   return(x)
-  # })
-  # 
-  # # arima_model = list(2)
-  # arima_model <- function(input, output)
-  #   ({
-  #     x = vector("list", n())
-  #     
-  #     if (input == TRUE)
-  #     {
-  #       for (i in 1:n())({
-  #         final_arima <- auto.arima(returns_log()[,i], max.p = 7, trace = TRUE, seasonal = TRUE, parallel = TRUE, stepwise = FALSE)
-  #         x[[i]] <- summary(final_arima)
-  #       })
-  #       setNames(x, paste0(colnames(df)[,1:n()] , 1:n()))
-  #       return(x)
-  #     }
-  #     if (input == FALSE)
-  #     {
-  #       return(NULL)
-  #     }
-  #   })
-  # arima_forecast_model <- function(input, output)
-  #   ({
-  #     x = vector("list", n())
-  #     
-  #     if (input == TRUE)
-  #     {
-  #       for (i in 1:n())({
-  #         final_arima <- auto.arima(returns_log()[,i], max.p = 7, trace = TRUE, seasonal = TRUE, parallel = TRUE, stepwise = FALSE)
-  #         x[[i]] <- predict(final_arima, n.ahead = 10)
-  #       })
-  #       setNames(x, paste0(colnames(df)[,1:n()] , 1:n()))
-  #       return(x)
-  #     }
-  #     if (input == FALSE)
-  #     {
-  #       return(NULL)
-  #     }
-  #   })
-  # 
-  # # garch_family <- reactive{
-  # #   spec1=ugarchspec(variance.model=list(model="sGARCH",garchOrder=c(1,1)), mean.model=list(armaOrder=c(0,0)))
-  # #   spec2=ugarchspec(variance.model=list(model="iGARCH"),mean.model=list(armaOrder=c(0,0)))
-  # #   spec3=ugarchspec(variance.model=list(model="eGARCH"),mean.model=list(armaOrder=c(0,0)))
-  # #   spec4=ugarchspec(variance.model=list(model="gjrGARCH"),mean.model=list(armaOrder=c(0,0)))
-  # #   mm=ugarchfit(spec=spec1,data=returns_log()[-1])
-  # #   
-  # # }
+  
+  bstats <- function(input, output)({
+    return(basicStats(input))
+  })
+  
   # garch_model <- function(input, output)
   #   ({
   #     x = vector("list", n())
@@ -208,42 +146,6 @@ server <- function(input, output) ({
   #         return(NULL)
   #       })
   #   })
-  # 
-  # 
-  # var_model <- function(input, output)
-  #   ({
-  #     if (input ==  TRUE){
-  #       return(VAR(returns_log(),1))
-  #     }
-  #     if (input == FALSE)
-  #       ({
-  #         return(NULL)
-  #       })
-  #   })
-  # 
-  # var_pred_model <- function(input, output)
-  #   ({
-  #     if (input ==  TRUE){
-  #       return(VARpred(VAR(returns_log(),1),4))
-  #     }
-  #     if (input == FALSE)
-  #       ({
-  #         return(NULL)
-  #       })
-  #   })
-  # rm_fit <- function(input,output)
-  # {
-  #   x = vector("list", n())
-  #   source("RMfit.R")
-  #   for (i in 1:n()) {
-  #     x[[i]] <- RMfit(returns_log()[,i])
-  # 
-  #   }
-  #   setNames(x, paste0(colnames(df)[,1:n()], 1:n()))
-  # 
-  #   x <- quantile(returns_log()[,1:n()],c(0.95,0.99,0.999))
-  #   return(x)
-  # }
   
   n <- reactive({
     return(ncol(df()))
@@ -275,6 +177,43 @@ server <- function(input, output) ({
     
   })
   
+  net <- function(input,output)({
+    cor_mat <- cor(df())
+    cor_mat[ lower.tri(cor_mat, diag=TRUE) ]<- 0
+    
+    graph <- graph.adjacency(cor_mat, weighted=TRUE, mode="upper" )
+    # E(graph)$weight<-t(cor_mat)[abs(t(cor_mat))>0.5]
+    E(graph)[ weight>0.7 ]$color<- "yellow"
+    E(graph)[ weight>=0.4 & weight<0.7 ]$color <-"blue" 
+    E(graph)[ weight>=0 &weight<0.4 ]$color <- "green" 
+    E(graph) [ weight<0 ]$color <- "red"
+    # E(graph)[ weight<0.55  ]$color <- "yellow"
+    V(graph)$label<- seq(1:n())#V(graph)$name
+    V(graph)$name <- colnames(df())
+    graph$layout <- layout.fruchterman.reingold
+    factor<-as.factor(cut(E(graph)$weight*10,c(-10,0,4,7,10)))
+    plotit <- function(input,output){plot(decompose.graph(graph)[[which.max(sapply(decompose.graph(graph), vcount))]], edge.width =as.numeric(factor)*1.5,frame=T)
+    legend("bottomleft", title="Colors", cex=0.75, pch=16, col=c("yellow", "blue","green", "red"),
+    legend=c(">70%", "40-70%","0-40%","0-(100)%"), ncol=2)}
+    return(plotit())
+  })
+  
+  net_det <- function(input,out){
+    cor_mat <- cor(df())
+    cor_mat[ lower.tri(cor_mat, diag=TRUE) ]<- 0
+    
+    graph <- graph.adjacency(cor_mat, weighted=TRUE, mode="upper" )
+    # E(graph)$weight<-t(cor_mat)[abs(t(cor_mat))>0.5]
+    E(graph)[ weight>0.7 ]$color<- "yellow"
+    E(graph)[ weight>=0.4 & weight<0.7 ]$color <-"blue" 
+    E(graph)[ weight>=0 &weight<0.4 ]$color <- "green" 
+    E(graph) [weight<0 ]$color <- "red"
+    # E(graph)[ weight<0.55  ]$color <- "yellow"
+    V(graph)$label<- seq(1:n())#V(graph)$name
+    V(graph)$name <- colnames(df())
+    graph$layout <- layout.fruchterman.reingold
+    return(graph)
+  }
   
   #First Tab Outputs
   output$priceplot <- renderDygraph(dygraph(df()[,1:n()]))
@@ -283,35 +222,22 @@ server <- function(input, output) ({
   output$bstat <- renderPrint(bstats(returns()[,1:n()]))  
   output$returnsplot <- renderDygraph(dygraph(returns()[,1:n()]))
   
-  #Second Tab Outputs
-  # output$autocorr <- renderPlot(acf(returns_log()[,1:n()], lag.max = 10))
-  # output$sum_autocorr <- renderPrint(summary(acf(returns_log()[,1:n()], lag.max = 10)))
-  # output$pacf <- renderPlot(summary(pacf(returns_log()[,1:n()], lag.max = 10)))
-  # output$sum_pacf <- renderPrint(summary(pacf(returns_log()[,1:n()], lag.max = 10)))
-  # output$adftest <- renderPrint(alpha("adftest"))
-  # output$boxtest <- renderPrint(alpha("boxtest"))
-  # output$annualseasonal <- renderPrint(alpha("annualseasonal"))
-  # output$coit <- renderPrint(summary(ca.jo(returns_log(), type = c("eigen", "trace"), ecdet = c("none", "const", "trend"), K = 2, spec=c("longrun", "transitory"), season = NULL, dumvar = NULL)))
-  # 
-  # #Third Tab Outputs
-  # output$arima <- renderPrint(arima_model(input$Arima))
-  # output$arima_forecast <- renderPrint(arima_forecast_model(input$Arima))
-  # output$Garch <- renderPrint(garch_model(input$Garch))
   
-  #Fourth Tab Outputs
+  #Second Tab Outputs
   output$var <- renderPrint(var_model(input$var))
   output$var_pred <- renderPrint(var_pred_model(input$var))
   output$mcs <- renderPrint(svsample(returns_log()[1:n()]))
-  # output$as <- renderPrint(SharpeRatio(R = returns_log(), Rf = .029, p = .95, annualize = TRUE, weights = c(wts())))
   
-  #Fifth Tab Outputs
+  #Second Tab Outputs
   output$Value <- renderPrint(round(VaR(returns()),2))
   output$wt<-renderPrint(round(wts()*100,2))
-  output$plot2<-renderPlot(barplot(wts(),
-                                   col="wheat",ylab="Weights", main ="Optimised weights" ))
+  output$plot2<-renderPlot(barplot(wts(), col="wheat",ylab="Weights", main ="Optimised weights" ))
   output$tab<-renderPrint(table.AnnualizedReturns(returns()))
-  #  output$plot4<-renderPlot(chart.TimeSeries(df(),main="Prices",legend.loc="topleft"))
-  
+  output$sna <- renderPlot(net())
+  output$cor <- renderPrint(cor(df()))
+  output$deg <- renderPrint(degree(net_det()))
+  output$bet <- renderPrint(betweenness(net_det(), normalized = TRUE))
+  output$cl <- renderPrint(closeness(net_det()))
 })
 
 # Run the application 
